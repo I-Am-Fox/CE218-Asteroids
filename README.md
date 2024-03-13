@@ -24,7 +24,6 @@ The game is implemented using several classes:
 - `Spaceship`: This class represents the player's spaceship.
 - `Asteroid`: This class represents an asteroid.
 - `HUD`: This class represents the heads-up display, which shows the player's score and remaining lives.
-- `Ship`: This class represents a ship.
 - `EnemyShip`: This class represents an enemy ship.
 - `Shot`: This class represents a shot fired by a ship.
 
