@@ -1,6 +1,6 @@
 package Game;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.util.Random;
 
 public class Asteroid extends Obj {
@@ -34,6 +34,7 @@ public class Asteroid extends Obj {
     // Draw the asteroid
     @Override
     public void draw(Graphics2D g) {
+        g.setColor(Color.WHITE);
         g.drawOval(x - size / 2, y - size / 2, size, size);
     }
 }
