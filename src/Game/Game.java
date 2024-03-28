@@ -22,8 +22,10 @@ public class Game implements ActionListener {
     private Random rand;
 
 
+    //The game has two states: MENU and PLAYING
     public enum GameState { MENU, PLAYING }
 
+    //Constructor for the game
     public Game() {
         currentState = GameState.MENU;
         spaceship = new Spaceship(400, 300);
@@ -39,6 +41,7 @@ public class Game implements ActionListener {
         startGameLoop();
     }
 
+    // Set up the game window
     private void setupWindow() {
         window = new JFrame("Asteroids Game");
         display = new GameDisplay();
@@ -48,6 +51,7 @@ public class Game implements ActionListener {
         window.setVisible(true);
     }
 
+    // Set up keyboard input
     private void setupInput() {
     window.addKeyListener(new KeyAdapter() {
         @Override
@@ -62,6 +66,7 @@ public class Game implements ActionListener {
     });
 }
 
+    // Reset the game to its initial state
     private void resetGame() {
         spaceship.resetPosition();
         enemyShips.clear();
@@ -69,23 +74,27 @@ public class Game implements ActionListener {
         score = 0;
     }
 
+    // Start the game loop
     private void startGameLoop() {
         Timer timer = new Timer(16, this);
         timer.start();
     }
 
+    // Game loop
     @Override
     public void actionPerformed(ActionEvent e) {
         if (currentState == GameState.PLAYING) {
             updateGameObjects();
             checkCollisions();
             spawnEnemies();
+            spawnAsteroids();
             removeOffScreenBullets();
         }
         updateDisplay();
         display.repaint();
     }
 
+    // Update the game objects (spaceship, enemies, bullets, asteroids)
     private void updateGameObjects() {
         spaceship.update();
         enemyShips.forEach(enemyShip -> enemyShip.update(spaceship));
@@ -93,6 +102,7 @@ public class Game implements ActionListener {
         asteroids.forEach(asteroid -> asteroid.update());
     }
 
+    // Check for collisions between game objects
     private void checkCollisions() {
     Iterator<Bullet> bulletIter = bullets.iterator();
     while (bulletIter.hasNext()) {
@@ -121,6 +131,7 @@ public class Game implements ActionListener {
         });
     }
 
+    // Checks if the spaceship is invulnerable
     if (spaceship.isInvulnerable()) {
         return;
     }
@@ -142,6 +153,7 @@ public class Game implements ActionListener {
     }
 }
 
+    // Spawn new enemy ships
     private void spawnEnemies() {
         if (enemyShips.size() < 5) {
             int x = rand.nextBoolean() ? -100 : 900;
@@ -150,16 +162,19 @@ public class Game implements ActionListener {
         }
     }
 
+    // Spawn new asteroids
     public void spawnAsteroids() {
         if (asteroids.size() < 5) {
             asteroids.add(new Asteroid(800, 600));
         }
     }
 
+    // Remove bullets that have gone off-screen
     private void removeOffScreenBullets() {
         bullets.removeIf(Bullet::isOffScreen);
     }
 
+    //Update the display with spaceship, enemies, bullets, and score
     private void updateDisplay() {
         display.setSpaceship(spaceship);
         display.setEnemyShips(enemyShips);

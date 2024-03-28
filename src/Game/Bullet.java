@@ -25,10 +25,11 @@ public class Bullet {
         return new Rectangle2D.Double(x, y, 4, 4);
     }
 
+    // Update the bullet's position and time to live
     public void update() {
         x += dx;
         y += dy;
-        timeToLive -= 16; // Assuming this method is called every 16 milliseconds
+        timeToLive -= 16;
 
         // Check if the bullet has gone off-screen or lived its life
         if (x < 0 || x > screenWidth || y < 0 || y > screenHeight || timeToLive <= 0) {
@@ -44,6 +45,4 @@ public class Bullet {
     public boolean isOffScreen() {
         return offScreen;
     }
-
-    // Getters and setters for x, y, etc.
 }

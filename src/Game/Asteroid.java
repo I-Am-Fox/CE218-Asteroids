@@ -63,7 +63,6 @@ public class Asteroid {
         g.fillOval((int)x, (int)y, size, size);
     }
 
-    // Getters
     public double getX() {
         return x;
     }

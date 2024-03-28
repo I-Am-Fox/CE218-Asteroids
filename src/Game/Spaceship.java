@@ -114,14 +114,17 @@ public void accelerate() {
         lives--;
     }
 
+    // Check if the spaceship is invulnerable
     public boolean isInvulnerable() {
         return isInvlunerable;
     }
 
+    // Add points to the player's score
     public void addScore(int points) {
         score += points;
     }
 
+    // Handle key press events for controlling the spaceship
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_A:
@@ -146,6 +149,7 @@ public void accelerate() {
         }
     }
 
+    // Get the bounds of the spaceship for collision detection
     public Rectangle2D.Double getBounds() {
         return new Rectangle2D.Double(x - 15, y - 10, 30, 20);
     }
@@ -161,6 +165,4 @@ public void accelerate() {
 
     g2d.dispose(); // Dispose the copy to prevent memory leaks
 }
-
-    // Getters and setters for x, y, lives, score, etc.
 }

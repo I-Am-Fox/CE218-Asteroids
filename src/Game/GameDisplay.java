@@ -4,6 +4,7 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.util.ArrayList;
 
+// The GameDisplay class is a JPanel that displays the game graphics.
 public class GameDisplay extends JPanel {
     private Spaceship spaceship;
     private ArrayList<EnemyShip> enemyShips;
@@ -61,6 +62,7 @@ public class GameDisplay extends JPanel {
             }
         }
 
+        // Draw the asteroids
         if (asteroids != null) {
             for (Asteroid asteroid : asteroids) {
                 asteroid.draw(g2d);

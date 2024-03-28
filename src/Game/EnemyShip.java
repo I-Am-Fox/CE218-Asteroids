@@ -52,10 +52,12 @@ public class EnemyShip {
         bullets.add(new Bullet(x, y, Math.toDegrees(angleToPlayer)));
     }
 
+    //Returns the hitbox of the enemy ship
     public Ellipse2D.Double getHitbox() {
         return hitbox;
     }
 
+    //Returns the list of bullets for the enemy ship
     public List<Bullet> getBullets() {
         return bullets;
     }
