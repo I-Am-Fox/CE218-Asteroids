@@ -1,111 +1,174 @@
 package Game;
 
-import javax.swing.*;
-import java.awt.Color;
-import java.awt.Graphics2D;
+import javax.swing.JFrame;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Random;
 
-/**
- * The Game class represents the main game logic and state.
- */
-public class Game extends JPanel {
-
-    private List<Obj> objs = new ArrayList<>();
-
-    // The title of the game
-    public static final String Title = "Asteroids";
-
-    // The width and height of the game window
-    public static final int WIDTH = 800, HEIGHT = 800;
-
-    /**
-     * The STATE enum represents the different states that the game can be in.
-     * Menu: The game is in the main menu.
-     * Title: The game is in the title screen.
-     * Game: The game is currently being played.
-     * Hit: The player's spaceship has been hit.
-     * GameOver: The game is over.
-     */
-    public static enum STATE {Menu, Title, Game, Hit, GameOver};
-
-    // The current state of the game
-    private static STATE State = STATE.Menu;
-
-    // The player's spaceship
+public class Game implements ActionListener {
+    private JFrame window;
+    private GameDisplay display;
+    private GameState currentState;
     private Spaceship spaceship;
-
-    // The number of lives the player has left
-    private int lives = 3;
-
-    // The player's current score
+    private ArrayList<EnemyShip> enemyShips;
+    private ArrayList<Bullet> bullets;
+    private ArrayList<Asteroid> asteroids;
     private int score;
+    private Random rand;
+
+
+    public enum GameState { MENU, PLAYING }
 
     public Game() {
-        init();
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int key = e.getKeyCode();
-
-                if (key == KeyEvent.VK_W) {
-                    // Move spaceship up
-                } else if (key == KeyEvent.VK_S) {
-                    // Move spaceship down
-                } else if (key == KeyEvent.VK_A) {
-                    // Move spaceship left
-                } else if (key == KeyEvent.VK_D) {
-                    // Move spaceship right
-                } else if (key == KeyEvent.VK_SPACE) {
-                    // Fire a shot
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                int key = e.getKeyCode();
-
-                if (key == KeyEvent.VK_W || key == KeyEvent.VK_S || key == KeyEvent.VK_A || key == KeyEvent.VK_D) {
-                    // Stop moving spaceship
-                } else if (key == KeyEvent.VK_SPACE) {
-                    // Stop firing
-                }
-            }
-        });
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Fire a shot
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Stop firing
-                }
-            }
-        });
-        setFocusable(true);
-    }
-
-    public void init() {
-        spaceship = new Spaceship(WIDTH / 2, HEIGHT / 2);
+        currentState = GameState.MENU;
+        spaceship = new Spaceship(400, 300);
+        enemyShips = new ArrayList<>();
+        bullets = new ArrayList<>();
+        asteroids = new ArrayList<>();
         score = 0;
-        lives = 3;
+        rand = new Random();
+
+
+        setupWindow();
+        setupInput();
+        startGameLoop();
     }
 
-    public void draw(Graphics2D g) {
-        g.setBackground(Color.BLACK);
-        g.clearRect(0, 0, WIDTH, HEIGHT);
+    private void setupWindow() {
+        window = new JFrame("Asteroids Game");
+        display = new GameDisplay();
+        window.add(display);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setSize(800, 600);
+        window.setVisible(true);
+    }
 
-        for (Obj obj : objs) {
-            obj.draw(g);
+    private void setupInput() {
+    window.addKeyListener(new KeyAdapter() {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (currentState == GameState.PLAYING) {
+                spaceship.keyPressed(e);
+            } else if (currentState == GameState.MENU && e.getKeyCode() == KeyEvent.VK_SPACE) {
+                currentState = GameState.PLAYING;
+                resetGame();
+            }
         }
+    });
+}
+
+    private void resetGame() {
+        spaceship.resetPosition();
+        enemyShips.clear();
+        bullets.clear();
+        score = 0;
+    }
+
+    private void startGameLoop() {
+        Timer timer = new Timer(16, this);
+        timer.start();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (currentState == GameState.PLAYING) {
+            updateGameObjects();
+            checkCollisions();
+            spawnEnemies();
+            removeOffScreenBullets();
+        }
+        updateDisplay();
+        display.repaint();
+    }
+
+    private void updateGameObjects() {
+        spaceship.update();
+        enemyShips.forEach(enemyShip -> enemyShip.update(spaceship));
+        bullets.forEach(bullet -> bullet.update());
+        asteroids.forEach(asteroid -> asteroid.update());
+    }
+
+    private void checkCollisions() {
+    Iterator<Bullet> bulletIter = bullets.iterator();
+    while (bulletIter.hasNext()) {
+        Bullet bullet = bulletIter.next();
+        if (bullet.isOffScreen()) {
+            bulletIter.remove();
+            continue;
+        }
+
+        enemyShips.removeIf(enemy -> {
+            if (bullet.getBounds().intersects(enemy.getBounds())) {
+                bulletIter.remove();
+                spaceship.addScore(35);
+                return true;
+            }
+            return false;
+        });
+
+        asteroids.removeIf(asteroid -> {
+            if (bullet.getBounds().intersects(asteroid.getHitbox().getBounds2D())) {
+                bulletIter.remove();
+                spaceship.addScore(20);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    if (spaceship.isInvulnerable()) {
+        return;
+    }
+
+    for (EnemyShip enemy : enemyShips) {
+        if (spaceship.getBounds().intersects(enemy.getBounds())) {
+            spaceship.loseLife();
+            currentState = GameState.MENU;
+            break;
+        }
+    }
+
+    for (Asteroid asteroid : asteroids) {
+        if (spaceship.getBounds().intersects(asteroid.getHitbox().getBounds2D())) {
+            spaceship.loseLife();
+            currentState = GameState.MENU;
+            break;
+        }
+    }
+}
+
+    private void spawnEnemies() {
+        if (enemyShips.size() < 5) {
+            int x = rand.nextBoolean() ? -100 : 900;
+            int y = rand.nextInt(600);
+            enemyShips.add(new EnemyShip(x, y));
+        }
+    }
+
+    public void spawnAsteroids() {
+        if (asteroids.size() < 5) {
+            asteroids.add(new Asteroid(800, 600));
+        }
+    }
+
+    private void removeOffScreenBullets() {
+        bullets.removeIf(Bullet::isOffScreen);
+    }
+
+    private void updateDisplay() {
+        display.setSpaceship(spaceship);
+        display.setEnemyShips(enemyShips);
+        display.setBullets(bullets);
+        display.setScore(score);
+        display.setCurrentState(currentState);
+    }
+
+    public static void main(String[] args) {
+        new Game();
     }
 }

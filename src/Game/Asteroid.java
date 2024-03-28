@@ -1,40 +1,82 @@
 package Game;
 
-import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.util.Random;
 
-public class Asteroid extends Obj {
-    private int x, y; // Position
-    private int size; // Size of the asteroid
-    private int dx, dy; // Velocity
+public class Asteroid {
+    private double x, y; // Asteroid position
+    private double dx, dy; // Velocity for movement
+    private int size; // Size of the asteroid, influencing speed, health, and score
+    private final int MAX_SPEED = 2;
+    private final int screenWidth = 800; // Screen width for wrapping and spawning
+    private final int screenHeight = 600; // Screen height for wrapping and spawning
+    private Ellipse2D.Double hitbox; // Collision detection hitbox
+    private Random rand = new Random();
 
-    public Asteroid(int x, int y, int dx, int dy) {
-        this.x = x; //Set the x position of the asteroid
-        this.y = y; //Set the y position of the asteroid
-        this.dx = dx; //Set the x velocity of the asteroid
-        this.dy = dy; //Set the y velocity of the asteroid
+    public Asteroid(int screenWidth, int screenHeight) {
+        // Determine starting edge for the asteroid spawn
+        boolean spawnLeftRight = rand.nextBoolean();
+        if (spawnLeftRight) {
+            x = rand.nextBoolean() ? 0 : screenWidth;
+            y = rand.nextInt(screenHeight);
+        } else {
+            x = rand.nextInt(screenWidth);
+            y = rand.nextBoolean() ? 0 : screenHeight;
+        }
 
-        // Generate a random size between 20 and 50
-        Random rand = new Random();
-        this.size = rand.nextInt(31) + 20; // This will generate a random number between 20 and 50
+        // Randomize velocity
+        double speedX = rand.nextDouble() * MAX_SPEED;
+        double speedY = rand.nextDouble() * MAX_SPEED;
+        dx = rand.nextBoolean() ? -speedX : speedX;
+        dy = rand.nextBoolean() ? -speedY : speedY;
+
+        // Determine size
+        size = rand.nextInt(30) + 20; // Sizes between 20 and 50
+        hitbox = new Ellipse2D.Double(x, y, size, size);
     }
 
-    // Update the asteroid's position
     public void update() {
         x += dx;
         y += dy;
+        hitbox.setFrame(x, y, size, size);
 
-        // If the asteroid goes off the screen, wrap it around to the other side
-        if (x < 0) x += Game.WIDTH;
-        if (x > Game.WIDTH) x -= Game.WIDTH;
-        if (y < 0) y += Game.HEIGHT;
-        if (y > Game.HEIGHT) y -= Game.HEIGHT;
+        // Screen wrapping
+        if (x < 0) {
+            x += screenWidth;
+        } else if (x > screenWidth) {
+            x -= screenWidth;
+        }
+        if (y < 0) {
+            y += screenHeight;
+        } else if (y > screenHeight) {
+            y -= screenHeight;
+        }
     }
 
-    // Draw the asteroid
-    @Override
-    public void draw(Graphics2D g) {
-        g.setColor(Color.WHITE);
-        g.drawOval(x - size / 2, y - size / 2, size, size);
+    public boolean checkCollision(Ellipse2D.Double otherHitbox) {
+        // Check for intersection with another hitbox (e.g., spaceship or bullet)
+        return hitbox.intersects(otherHitbox.getBounds2D());
+    }
+
+    // Method for drawing the asteroid in the game display
+    public void draw(java.awt.Graphics2D g) {
+        g.fillOval((int)x, (int)y, size, size);
+    }
+
+    // Getters
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public Ellipse2D.Double getHitbox() {
+        return hitbox;
     }
 }
